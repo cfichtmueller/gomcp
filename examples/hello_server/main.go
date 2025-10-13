@@ -27,6 +27,16 @@ func main() {
 		},
 	})
 
+	server.AddResource(&gomcp.Resource{
+		Name: "test",
+		Uri:  "gomcp://test",
+		Handler: func(ctx context.Context) *protocol.ReadResourceResult {
+			return protocol.NewReadResourceResult().AddContent(
+				protocol.NewTextResourceContents("Hello world", "gomcp://test").SetMimeType("text/plain"),
+			)
+		},
+	})
+
 	server.AddTool(&gomcp.Tool{
 		Name:        "add",
 		Title:       "Add",

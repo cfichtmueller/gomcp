@@ -9,22 +9,36 @@ import (
 )
 
 type Server struct {
-	tools    []*Tool
-	handlers map[string]HandleFunc
+	tools     []*Tool
+	resources []*Resource
+	handlers  map[string]HandleFunc
 }
 
 func NewServer() *Server {
 	s := &Server{
-		tools:    make([]*Tool, 0),
-		handlers: make(map[string]HandleFunc),
+		tools:     make([]*Tool, 0),
+		resources: make([]*Resource, 0),
+		handlers:  make(map[string]HandleFunc),
 	}
 
 	s.handlers["initialize"] = s.handleInitialize
 	s.handlers["logging/setLevel"] = s.handleLoggingSetLevel
 	s.handlers["notifications/initialized"] = s.handleInitializedNotification
+	s.handlers["resources/list"] = s.handleListResources
+	s.handlers["resources/read"] = s.handleReadResource
 	s.handlers["tools/call"] = s.handleCallTool
 	s.handlers["tools/list"] = s.handleListTools
 	return s
+}
+
+func (s *Server) AddResource(resource *Resource) {
+	if resource.Name == "" {
+		panic("name is not set")
+	}
+	if resource.Uri == "" {
+		panic("uri is not set")
+	}
+	s.resources = append(s.resources, resource)
 }
 
 func (s *Server) AddTool(tool *Tool) {
@@ -61,6 +75,9 @@ func (s *Server) handleInitialize(ctx context.Context, message *JsonRpcRequest) 
 	slog.Info("Initialization started", "params", params)
 	caps := protocol.NewServerCapabilities()
 	caps.Tools = protocol.NewCapability().SetListChanged(true)
+	if len(s.resources) > 0 {
+		caps.Resources = protocol.NewCapability().SetListChanged(true)
+	}
 	return RequestResponse(NewResultJsonRpcResponse(message.Id, protocol.InitializeResult{
 		ProtocolVersion: params.ProtocolVersion,
 		Capabilities:    caps,
@@ -85,6 +102,38 @@ func (s *Server) handleLoggingSetLevel(ctx context.Context, message *JsonRpcRequ
 
 	slog.Info("Logging set level", "params", params)
 	return NotificationResponse()
+}
+
+func (s *Server) handleListResources(ctx context.Context, message *JsonRpcRequest) *HandlerResponse {
+	var params protocol.ListResourcesRequest
+	if r := s.mustParseParams(message, &params); r != nil {
+		return r
+	}
+	res := protocol.NewListResourcesResult()
+	for _, resource := range s.resources {
+		res.AddResource(&protocol.Resource{
+			Name: resource.Name,
+			Uri:  resource.Uri,
+		})
+	}
+	return RequestResponse(NewResultJsonRpcResponse(message.Id, res))
+}
+
+func (s *Server) handleReadResource(ctx context.Context, message *JsonRpcRequest) *HandlerResponse {
+	var params protocol.ReadResourceParams
+	if r := s.mustParseParams(message, &params); r != nil {
+		return r
+	}
+	for _, resource := range s.resources {
+		if resource.Uri == params.Uri {
+			r := resource.Handler(ctx)
+			return RequestResponse(NewResultJsonRpcResponse(message.Id, r))
+		}
+	}
+	return BadRequestResponse(NewErrorJsonRpcResponse(message.Id, &JsonRpcError{
+		Code:    -32000,
+		Message: "Resource not found",
+	}))
 }
 
 func (s *Server) handleCallTool(ctx context.Context, message *JsonRpcRequest) *HandlerResponse {
