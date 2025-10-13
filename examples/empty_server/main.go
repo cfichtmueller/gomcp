@@ -13,7 +13,7 @@ func main() {
 	if addr == "" {
 		addr = "127.0.0.1:8080"
 	}
-	server := gomcp.NewServer()
+	server := gomcp.NewServer("empty", "", "1.0.0")
 
 	transport := gomcp.NewHttpTransport(server)
 	http.HandleFunc("/mcp", transport.Handle)

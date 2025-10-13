@@ -8,14 +8,21 @@ import (
 )
 
 type Server struct {
+	info              *protocol.ServerInfo
+	instructions      string
 	tools             []*Tool
 	resources         []*Resource
 	resourceTemplates []*ResourceTemplate
 	handlers          map[string]HandleFunc
 }
 
-func NewServer() *Server {
+func NewServer(name, title, version string) *Server {
 	s := &Server{
+		info: &protocol.ServerInfo{
+			Name:    name,
+			Title:   title,
+			Version: version,
+		},
 		tools:             make([]*Tool, 0),
 		resources:         make([]*Resource, 0),
 		resourceTemplates: make([]*ResourceTemplate, 0),
@@ -32,6 +39,10 @@ func NewServer() *Server {
 	s.handlers["tools/call"] = s.handleCallTool
 	s.handlers["tools/list"] = s.handleListTools
 	return s
+}
+
+func (s *Server) SetInstructions(instructions string) {
+	s.instructions = instructions
 }
 
 func (s *Server) AddResource(resource *Resource) {
@@ -98,12 +109,8 @@ func (s *Server) handleInitialize(ctx context.Context, message *JsonRpcRequest) 
 	return RequestResponse(NewResultJsonRpcResponse(message.Id, protocol.InitializeResult{
 		ProtocolVersion: params.ProtocolVersion,
 		Capabilities:    caps,
-		ServerInfo: &protocol.ServerInfo{
-			Name:    "gomcp",
-			Title:   "gomcp",
-			Version: Release,
-		},
-		Instructions: "Hello, world!",
+		ServerInfo:      s.info,
+		Instructions:    s.instructions,
 	}))
 }
 
