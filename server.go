@@ -24,6 +24,7 @@ func NewServer() *Server {
 	s.handlers["initialize"] = s.handleInitialize
 	s.handlers["logging/setLevel"] = s.handleLoggingSetLevel
 	s.handlers["notifications/initialized"] = s.handleInitializedNotification
+	s.handlers["ping"] = s.handlePing
 	s.handlers["resources/list"] = s.handleListResources
 	s.handlers["resources/read"] = s.handleReadResource
 	s.handlers["tools/call"] = s.handleCallTool
@@ -104,6 +105,10 @@ func (s *Server) handleLoggingSetLevel(ctx context.Context, message *JsonRpcRequ
 
 	slog.Info("Logging set level", "params", params)
 	return NotificationResponse()
+}
+
+func (s *Server) handlePing(ctx context.Context, message *JsonRpcRequest) *HandlerResponse {
+	return RequestResponse(NewResultJsonRpcResponse(message.Id, map[string]any{}))
 }
 
 func (s *Server) handleListResources(ctx context.Context, message *JsonRpcRequest) *HandlerResponse {
