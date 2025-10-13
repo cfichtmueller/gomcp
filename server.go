@@ -74,7 +74,9 @@ func (s *Server) handleInitialize(ctx context.Context, message *JsonRpcRequest) 
 
 	slog.Info("Initialization started", "params", params)
 	caps := protocol.NewServerCapabilities()
-	caps.Tools = protocol.NewCapability().SetListChanged(true)
+	if len(s.tools) > 0 {
+		caps.Tools = protocol.NewCapability().SetListChanged(true)
+	}
 	if len(s.resources) > 0 {
 		caps.Resources = protocol.NewCapability().SetListChanged(true)
 	}
