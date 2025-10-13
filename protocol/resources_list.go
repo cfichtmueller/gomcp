@@ -20,3 +20,18 @@ func (r *ListResourcesResult) AddResource(resource *Resource) *ListResourcesResu
 	r.Resources = append(r.Resources, resource)
 	return r
 }
+
+type ListResourcesTemplatesResult struct {
+	ResourceTemplates []*ResourceTemplate `json:"resourceTemplates"`
+}
+
+func NewListResourcesTemplatesResult() *ListResourcesTemplatesResult {
+	return &ListResourcesTemplatesResult{
+		ResourceTemplates: make([]*ResourceTemplate, 0),
+	}
+}
+
+func (r *ListResourcesTemplatesResult) AddResourceTemplate(resourceTemplate *ResourceTemplate) *ListResourcesTemplatesResult {
+	r.ResourceTemplates = append(r.ResourceTemplates, resourceTemplate)
+	return r
+}

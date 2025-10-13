@@ -2,6 +2,7 @@ package gomcp
 
 import (
 	"context"
+	"errors"
 
 	"github.com/cfichtmueller/gomcp/protocol"
 )
@@ -12,7 +13,15 @@ type Resource struct {
 	Handler func(ctx context.Context) *protocol.ReadResourceResult
 }
 
-type ResourceResolver struct {
-	List func(ctx context.Context) ([]*protocol.Resource, error)
+var ErrNoSuchResource = errors.New("no such resource")
+
+type ResourceTemplate struct {
+	Description string
+	MimeType    string
+	Name        string
+	Title       string
+	UriTemplate string
+	// Read attempts to read a resource using the given URI. If the URI cannot be resolved using
+	// this template, it returns ErrNoSuchResource.
 	Read func(ctx context.Context, uri string) (*protocol.ReadResourceResult, error)
 }

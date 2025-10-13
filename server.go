@@ -11,7 +11,7 @@ import (
 type Server struct {
 	tools             []*Tool
 	resources         []*Resource
-	resourceResolvers []*ResourceResolver
+	resourceTemplates []*ResourceTemplate
 	handlers          map[string]HandleFunc
 }
 
@@ -19,7 +19,7 @@ func NewServer() *Server {
 	s := &Server{
 		tools:             make([]*Tool, 0),
 		resources:         make([]*Resource, 0),
-		resourceResolvers: make([]*ResourceResolver, 0),
+		resourceTemplates: make([]*ResourceTemplate, 0),
 		handlers:          make(map[string]HandleFunc),
 	}
 
@@ -29,6 +29,7 @@ func NewServer() *Server {
 	s.handlers["ping"] = s.handlePing
 	s.handlers["resources/list"] = s.handleListResources
 	s.handlers["resources/read"] = s.handleReadResource
+	s.handlers["resources/templates/list"] = s.handleListResourcesTemplates
 	s.handlers["tools/call"] = s.handleCallTool
 	s.handlers["tools/list"] = s.handleListTools
 	return s
@@ -44,14 +45,17 @@ func (s *Server) AddResource(resource *Resource) {
 	s.resources = append(s.resources, resource)
 }
 
-func (s *Server) AddResourceResolver(resolver *ResourceResolver) {
-	if resolver.List == nil {
-		panic("list is not set")
+func (s *Server) AddResourceTemplate(template *ResourceTemplate) {
+	if template.Name == "" {
+		panic("name is not set")
 	}
-	if resolver.Read == nil {
+	if template.UriTemplate == "" {
+		panic("uri template is not set")
+	}
+	if template.Read == nil {
 		panic("read is not set")
 	}
-	s.resourceResolvers = append(s.resourceResolvers, resolver)
+	s.resourceTemplates = append(s.resourceTemplates, template)
 }
 
 func (s *Server) AddTool(tool *Tool) {
@@ -90,7 +94,7 @@ func (s *Server) handleInitialize(ctx context.Context, message *JsonRpcRequest) 
 	if len(s.tools) > 0 {
 		caps.Tools = protocol.NewCapability().SetListChanged(true)
 	}
-	if len(s.resources) > 0 || len(s.resourceResolvers) > 0 {
+	if len(s.resources) > 0 || len(s.resourceTemplates) > 0 {
 		caps.Resources = protocol.NewCapability().SetListChanged(true)
 	}
 	return RequestResponse(NewResultJsonRpcResponse(message.Id, protocol.InitializeResult{
@@ -135,14 +139,19 @@ func (s *Server) handleListResources(ctx context.Context, message *JsonRpcReques
 			Uri:  resource.Uri,
 		})
 	}
-	for _, resolver := range s.resourceResolvers {
-		sub, err := resolver.List(ctx)
-		if err != nil {
-			panic(err) // TODO: handle error
-		}
-		for _, r := range sub {
-			res.AddResource(r)
-		}
+	return RequestResponse(NewResultJsonRpcResponse(message.Id, res))
+}
+
+func (s *Server) handleListResourcesTemplates(ctx context.Context, message *JsonRpcRequest) *HandlerResponse {
+	res := protocol.NewListResourcesTemplatesResult()
+	for _, template := range s.resourceTemplates {
+		res.AddResourceTemplate(&protocol.ResourceTemplate{
+			Description: template.Description,
+			MimeType:    template.MimeType,
+			Title:       template.Title,
+			Name:        template.Name,
+			UriTemplate: template.UriTemplate,
+		})
 	}
 	return RequestResponse(NewResultJsonRpcResponse(message.Id, res))
 }
@@ -158,9 +167,12 @@ func (s *Server) handleReadResource(ctx context.Context, message *JsonRpcRequest
 			return RequestResponse(NewResultJsonRpcResponse(message.Id, r))
 		}
 	}
-	for _, resolver := range s.resourceResolvers {
-		r, err := resolver.Read(ctx, params.Uri)
+	for _, template := range s.resourceTemplates {
+		r, err := template.Read(ctx, params.Uri)
 		if err != nil {
+			if err == ErrNoSuchResource {
+				continue
+			}
 			panic(err) // TODO: handle error
 		}
 		return RequestResponse(NewResultJsonRpcResponse(message.Id, r))

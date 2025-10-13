@@ -211,3 +211,15 @@ func (r *BlobResourceContents) SetMimeType(mimeType string) *BlobResourceContent
 	r.MimeType = mimeType
 	return r
 }
+
+// ResourceTemplate is a template description for resources available on the server.
+type ResourceTemplate struct {
+	// A description of what this template is for.
+	//
+	// This can be used by clients to improve the LLM’s understanding of available resources. It can be thought of like a “hint” to the model.
+	Description string `json:"description,omitempty"`
+	MimeType    string `json:"mimeType,omitempty"`
+	Name        string `json:"name"`
+	Title       string `json:"title,omitempty"`
+	UriTemplate string `json:"uriTemplate"`
+}
