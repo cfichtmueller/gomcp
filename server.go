@@ -3,7 +3,6 @@ package gomcp
 import (
 	"context"
 	"encoding/json"
-	"log/slog"
 
 	"github.com/cfichtmueller/gomcp/protocol"
 )
@@ -89,7 +88,6 @@ func (s *Server) handleInitialize(ctx context.Context, message *JsonRpcRequest) 
 		return r
 	}
 
-	slog.Info("Initialization started", "params", params)
 	caps := protocol.NewServerCapabilities()
 	if len(s.tools) > 0 {
 		caps.Tools = protocol.NewCapability().SetListChanged(true)
@@ -118,8 +116,6 @@ func (s *Server) handleLoggingSetLevel(ctx context.Context, message *JsonRpcRequ
 	if r := s.mustParseParams(message, &params); r != nil {
 		return r
 	}
-
-	slog.Info("Logging set level", "params", params)
 	return NotificationResponse()
 }
 
