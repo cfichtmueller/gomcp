@@ -9,16 +9,18 @@ import (
 )
 
 type Server struct {
-	tools     []*Tool
-	resources []*Resource
-	handlers  map[string]HandleFunc
+	tools             []*Tool
+	resources         []*Resource
+	resourceResolvers []*ResourceResolver
+	handlers          map[string]HandleFunc
 }
 
 func NewServer() *Server {
 	s := &Server{
-		tools:     make([]*Tool, 0),
-		resources: make([]*Resource, 0),
-		handlers:  make(map[string]HandleFunc),
+		tools:             make([]*Tool, 0),
+		resources:         make([]*Resource, 0),
+		resourceResolvers: make([]*ResourceResolver, 0),
+		handlers:          make(map[string]HandleFunc),
 	}
 
 	s.handlers["initialize"] = s.handleInitialize
@@ -40,6 +42,16 @@ func (s *Server) AddResource(resource *Resource) {
 		panic("uri is not set")
 	}
 	s.resources = append(s.resources, resource)
+}
+
+func (s *Server) AddResourceResolver(resolver *ResourceResolver) {
+	if resolver.List == nil {
+		panic("list is not set")
+	}
+	if resolver.Read == nil {
+		panic("read is not set")
+	}
+	s.resourceResolvers = append(s.resourceResolvers, resolver)
 }
 
 func (s *Server) AddTool(tool *Tool) {
@@ -78,7 +90,7 @@ func (s *Server) handleInitialize(ctx context.Context, message *JsonRpcRequest) 
 	if len(s.tools) > 0 {
 		caps.Tools = protocol.NewCapability().SetListChanged(true)
 	}
-	if len(s.resources) > 0 {
+	if len(s.resources) > 0 || len(s.resourceResolvers) > 0 {
 		caps.Resources = protocol.NewCapability().SetListChanged(true)
 	}
 	return RequestResponse(NewResultJsonRpcResponse(message.Id, protocol.InitializeResult{
@@ -123,6 +135,15 @@ func (s *Server) handleListResources(ctx context.Context, message *JsonRpcReques
 			Uri:  resource.Uri,
 		})
 	}
+	for _, resolver := range s.resourceResolvers {
+		sub, err := resolver.List(ctx)
+		if err != nil {
+			panic(err) // TODO: handle error
+		}
+		for _, r := range sub {
+			res.AddResource(r)
+		}
+	}
 	return RequestResponse(NewResultJsonRpcResponse(message.Id, res))
 }
 
@@ -136,6 +157,13 @@ func (s *Server) handleReadResource(ctx context.Context, message *JsonRpcRequest
 			r := resource.Handler(ctx)
 			return RequestResponse(NewResultJsonRpcResponse(message.Id, r))
 		}
+	}
+	for _, resolver := range s.resourceResolvers {
+		r, err := resolver.Read(ctx, params.Uri)
+		if err != nil {
+			panic(err) // TODO: handle error
+		}
+		return RequestResponse(NewResultJsonRpcResponse(message.Id, r))
 	}
 	return BadRequestResponse(NewErrorJsonRpcResponse(message.Id, &JsonRpcError{
 		Code:    -32000,
