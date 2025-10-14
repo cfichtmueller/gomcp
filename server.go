@@ -17,6 +17,12 @@ type Server struct {
 }
 
 func NewServer(name, title, version string) *Server {
+	if name == "" {
+		panic("name is not set")
+	}
+	if version == "" {
+		panic("version is not set")
+	}
 	s := &Server{
 		info: &protocol.ServerInfo{
 			Name:    name,
