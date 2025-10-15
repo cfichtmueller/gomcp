@@ -1,0 +1,33 @@
+name: Build Library
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        go-version: ['1.23', '1.24', '1.25']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go-version }}
+        
+    - name: Verify Go version
+      run: go version
+      
+    - name: Install golint
+      run: go install golang.org/x/lint/golint@latest
+      
+    - name: Run full CI pipeline
+      run: make ci
