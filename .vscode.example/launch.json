@@ -12,6 +12,13 @@
             "program": "${workspaceFolder}/examples/empty_server/main.go"
         },
         {
+            "name": "Hello World",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/examples/hello_world/main.go"
+        },
+        {
             "name": "Hello Server",
             "type": "go",
             "request": "launch",
