@@ -35,6 +35,17 @@ build:
 	@$(GOCMD) list -f '{{.Dir}}' ./... | head -1 > /dev/null
 	@echo "Library build completed successfully"
 
+# Build examples
+.PHONY: build-examples
+build-examples:
+	@echo "Building examples..."
+	@for example in examples/*/; do \
+		if [ -f "$$example/main.go" ]; then \
+			echo "Building $$example"; \
+			$(GOCMD) build -o $(BUILD_DIR)/$$(basename $$example) $$example/main.go; \
+		fi; \
+	done
+
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
@@ -151,27 +162,33 @@ dev-setup:
 	@$(GOMOD) tidy
 	@echo "Development setup completed"
 
+# Full CI pipeline
+.PHONY: ci
+ci: vet test build build-examples
+
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  all          - Clean, deps, fmt, vet, lint, test, and build"
-	@echo "  build        - Build the library"
-	@echo "  clean        - Clean build artifacts"
-	@echo "  test         - Run tests"
-	@echo "  test-verbose - Run tests with verbose output"
-	@echo "  test-coverage- Run tests with coverage report"
-	@echo "  fmt          - Format code"
-	@echo "  vet          - Run go vet"
-	@echo "  lint         - Run linter (requires golangci-lint)"
-	@echo "  deps         - Download dependencies"
-	@echo "  tidy         - Tidy dependencies"
-	@echo "  examples     - Build all examples"
-	@echo "  run-hello    - Run hello server example"
-	@echo "  install      - Install the library"
-	@echo "  docs         - Generate documentation"
-	@echo "  security     - Check for security vulnerabilities"
-	@echo "  benchmark    - Run benchmark tests"
-	@echo "  check-deps   - Verify dependencies"
-	@echo "  release      - Create release build"
-	@echo "  dev-setup    - Setup development environment"
-	@echo "  help         - Show this help message"
+	@echo "  all            - Clean, deps, fmt, vet, lint, test, and build"
+	@echo "  build          - Build the library"
+	@echo "  build-examples - Build all examples"
+	@echo "  clean          - Clean build artifacts"
+	@echo "  test           - Run tests"
+	@echo "  test-verbose   - Run tests with verbose output"
+	@echo "  test-coverage  - Run tests with coverage report"
+	@echo "  fmt            - Format code"
+	@echo "  vet            - Run go vet"
+	@echo "  lint           - Run linter (requires golangci-lint)"
+	@echo "  deps           - Download dependencies"
+	@echo "  tidy           - Tidy dependencies"
+	@echo "  examples       - Build all examples"
+	@echo "  run-hello      - Run hello server example"
+	@echo "  install        - Install the library"
+	@echo "  docs           - Generate documentation"
+	@echo "  security       - Check for security vulnerabilities"
+	@echo "  benchmark      - Run benchmark tests"
+	@echo "  check-deps     - Verify dependencies"
+	@echo "  release        - Create release build"
+	@echo "  dev-setup      - Setup development environment"
+	@echo "  ci             - Run full CI pipeline"
+	@echo "  help           - Show this help message"
