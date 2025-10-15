@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cfichtmueller/gomcp/protocol"
+	"github.com/cfichtmueller/gomcp/schema"
 )
 
 type Tool struct {
@@ -24,10 +25,10 @@ func (t *Tool) Call(ctx context.Context, arguments *ToolArguments) *protocol.Cal
 }
 
 type ToolArguments struct {
-	backing map[string]any
+	backing schema.M
 }
 
-func NewToolArguments(arguments map[string]any) *ToolArguments {
+func NewToolArguments(arguments schema.M) *ToolArguments {
 	return &ToolArguments{
 		backing: arguments,
 	}

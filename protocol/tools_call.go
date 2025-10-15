@@ -1,24 +1,26 @@
 package protocol
 
+import "github.com/cfichtmueller/gomcp/schema"
+
 type CallToolsRequest struct {
 	Params CallToolsParams `json:"params"`
 }
 
 type CallToolsParams struct {
-	Name      string         `json:"name"`
-	Arguments map[string]any `json:"arguments"`
+	Name      string   `json:"name"`
+	Arguments schema.M `json:"arguments"`
 }
 
 type CallToolsResult struct {
-	Meta              map[string]any `json:"_meta,omitempty"`
-	Content           []any          `json:"content"`
-	IsError           *bool          `json:"isError,omitempty"`
-	StructuredContent map[string]any `json:"structuredContent,omitempty"`
+	Meta              schema.M `json:"_meta,omitempty"`
+	Content           schema.A `json:"content"`
+	IsError           *bool    `json:"isError,omitempty"`
+	StructuredContent schema.M `json:"structuredContent,omitempty"`
 }
 
 func NewCallToolsResult() *CallToolsResult {
 	return &CallToolsResult{
-		Content: make([]any, 0),
+		Content: make(schema.A, 0),
 	}
 }
 

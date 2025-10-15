@@ -1,5 +1,7 @@
 package protocol
 
+import "github.com/cfichtmueller/gomcp/schema"
+
 type ReadResourceRequest struct {
 	Params ReadResourceParams `json:"params"`
 }
@@ -9,12 +11,12 @@ type ReadResourceParams struct {
 }
 
 type ReadResourceResult struct {
-	Contents []any `json:"contents"`
+	Contents schema.A `json:"contents"`
 }
 
 func NewReadResourceResult() *ReadResourceResult {
 	return &ReadResourceResult{
-		Contents: make([]any, 0),
+		Contents: make(schema.A, 0),
 	}
 }
 

@@ -1,5 +1,7 @@
 package protocol
 
+import "github.com/cfichtmueller/gomcp/schema"
+
 type Annotations struct {
 	Audience     []Role `json:"audience,omitempty"`
 	LastModified string `json:"lastModified,omitempty"`
@@ -71,9 +73,9 @@ func NewTool(name string) *Tool {
 }
 
 type InputSchema struct {
-	Properties map[string]any `json:"properties,omitempty"`
-	Required   []string       `json:"required,omitempty"`
-	Type       string         `json:"type"`
+	Properties schema.M `json:"properties,omitempty"`
+	Required   []string `json:"required,omitempty"`
+	Type       string   `json:"type"`
 }
 
 func NewInputSchema() *InputSchema {
@@ -96,9 +98,9 @@ func (i *InputSchema) SetRequired(required ...string) *InputSchema {
 }
 
 type OutputSchema struct {
-	Properties map[string]any `json:"properties,omitempty"`
-	Required   []string       `json:"required,omitempty"`
-	Type       string         `json:"type"`
+	Properties schema.M `json:"properties,omitempty"`
+	Required   []string `json:"required,omitempty"`
+	Type       string   `json:"type"`
 }
 
 func NewOutputSchema() *OutputSchema {
@@ -109,7 +111,7 @@ func NewOutputSchema() *OutputSchema {
 
 func (i *OutputSchema) SetProperty(key string, value any) *OutputSchema {
 	if i.Properties == nil {
-		i.Properties = make(map[string]any)
+		i.Properties = make(schema.M)
 	}
 	i.Properties[key] = value
 	return i
@@ -120,15 +122,15 @@ func (i *OutputSchema) SetRequired(required ...string) *OutputSchema {
 	return i
 }
 
-func NewStringProperty(description string) any {
-	return map[string]any{
+func NewStringProperty(description string) schema.M {
+	return schema.M{
 		"type":        "string",
 		"description": description,
 	}
 }
 
-func NewNumberProperty(description string) any {
-	return map[string]any{
+func NewNumberProperty(description string) schema.M {
+	return schema.M{
 		"type":        "number",
 		"description": description,
 	}
