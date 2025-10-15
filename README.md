@@ -1,6 +1,6 @@
 # gomcp
 
-[Go 1.22](https://golang.org/) | [MIT License](LICENSE)
+[Go 1.24](https://golang.org/) | [MIT License](LICENSE)
 
 A Go library for building **Model Context Protocol (MCP)** servers. This library provides a simple and intuitive way to create MCP servers that can expose tools and resources to AI models.
 

@@ -1,3 +1,3 @@
 module github.com/cfichtmueller/gomcp
 
-go 1.22
+go 1.24
