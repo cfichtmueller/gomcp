@@ -5,11 +5,39 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Empty Server",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/examples/empty_server/main.go"
+        },
+        {
             "name": "Hello Server",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/examples/hello_server/main.go",
+            "program": "${workspaceFolder}/examples/hello_server/main.go"
+        },
+        {
+            "name": "Resource Resolver",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/examples/resource_resolver/main.go"
+        },
+        {
+            "name": "Resource Templates",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/examples/resource_templates/main.go"
+        },
+        {
+            "name": "Auth",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/examples/auth/main.go"
         }
     ]
 }
